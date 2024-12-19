@@ -1,22 +1,46 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Basic Test</title>
+    <title>Display Capture Test</title>
 </head>
-<body style="background: black; color: white;">
-    <h1>Basic Display Test</h1>
-    <p>If you can see this, the page is loading.</p>
-    <button onclick="alert('Button clicked!')">Click Me</button>
-    
-    <p id="info">Testing browser...</p>
+<body style="background: black; color: white; font-family: Arial; padding: 20px;">
+    <h1>Display Capture Test</h1>
+    <button onclick="testCapture()">Start Capture Test</button>
+    <p id="status">Ready to test...</p>
 
     <script>
-        document.getElementById('info').textContent = 'Page loaded successfully!';
-        
-        if (navigator.mediaDevices) {
-            document.getElementById('info').textContent += '\nMediaDevices available';
-        } else {
-            document.getElementById('info').textContent += '\nMediaDevices NOT available';
+        document.getElementById('status').textContent = 'Page loaded. Click button to test.';
+
+        async function testCapture() {
+            const status = document.getElementById('status');
+            
+            try {
+                if (!navigator.mediaDevices) {
+                    status.textContent = 'MediaDevices not available';
+                    return;
+                }
+
+                if (!navigator.mediaDevices.getDisplayMedia) {
+                    status.textContent = 'getDisplayMedia not available';
+                    return;
+                }
+
+                status.textContent = 'Requesting display capture...';
+                
+                const stream = await navigator.mediaDevices.getDisplayMedia({
+                    video: true
+                });
+
+                status.textContent = 'Success! Capture working.';
+                
+                const tracks = stream.getVideoTracks();
+                if (tracks.length > 0) {
+                    status.textContent += '\nTrack label: ' + tracks[0].label;
+                }
+
+            } catch (error) {
+                status.textContent = 'Error: ' + error.message;
+            }
         }
     </script>
 </body>
