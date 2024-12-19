@@ -1,45 +1,39 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Display Capture Test</title>
+    <title>Display Test</title>
 </head>
-<body style="background: black; color: white; font-family: Arial; padding: 20px;">
-    <h1>Display Capture Test</h1>
-    <button onclick="testCapture()">Start Capture Test</button>
-    <p id="status">Ready to test...</p>
+<body style="background: black; color: white;">
+    <h1>Display Test</h1>
+    <button onclick="testMedia()">Test Display Capture</button>
+    <p id="log">Page loaded</p>
 
     <script>
-        document.getElementById('status').textContent = 'Page loaded. Click button to test.';
-
-        async function testCapture() {
-            const status = document.getElementById('status');
+        function testMedia() {
+            let log = document.getElementById('log');
             
-            try {
-                if (!navigator.mediaDevices) {
-                    status.textContent = 'MediaDevices not available';
-                    return;
-                }
-
-                if (!navigator.mediaDevices.getDisplayMedia) {
-                    status.textContent = 'getDisplayMedia not available';
-                    return;
-                }
-
-                status.textContent = 'Requesting display capture...';
+            // 1단계: mediaDevices 확인
+            if (navigator.mediaDevices) {
+                log.innerHTML += '<br>mediaDevices exists';
+            } else {
+                log.innerHTML += '<br>no mediaDevices';
+                return;
+            }
+            
+            // 2단계: getDisplayMedia 확인
+            if (navigator.mediaDevices.getDisplayMedia) {
+                log.innerHTML += '<br>getDisplayMedia exists';
                 
-                const stream = await navigator.mediaDevices.getDisplayMedia({
-                    video: true
-                });
-
-                status.textContent = 'Success! Capture working.';
-                
-                const tracks = stream.getVideoTracks();
-                if (tracks.length > 0) {
-                    status.textContent += '\nTrack label: ' + tracks[0].label;
-                }
-
-            } catch (error) {
-                status.textContent = 'Error: ' + error.message;
+                // 3단계: 실제 호출 시도
+                navigator.mediaDevices.getDisplayMedia({ video: true })
+                    .then(stream => {
+                        log.innerHTML += '<br>Successfully got stream';
+                    })
+                    .catch(err => {
+                        log.innerHTML += '<br>Error: ' + err;
+                    });
+            } else {
+                log.innerHTML += '<br>no getDisplayMedia';
             }
         }
     </script>
