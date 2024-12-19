@@ -24,12 +24,12 @@
     </style>
 </head>
 <body>
-    <div id="status">Initializing...</div>
-    <div id="controls">
-        <button onclick="startCapture()">Start Capture</button>
-        <button onclick="stopCapture()">Stop Capture</button>
+    <div id=""status"">Initializing...</div>
+    <div id=""controls"">
+        <button onclick=""startCapture()"">Start Capture</button>
+        <button onclick=""stopCapture()"">Stop Capture</button>
     </div>
-    <video id="local-video" autoplay playsinline muted></video>
+    <video id=""local-video"" autoplay playsinline muted></video>
 
     <script>
         const statusElement = document.getElementById('status');
@@ -40,7 +40,7 @@
             try {
                 const stream = await navigator.mediaDevices.getDisplayMedia({
                     video: {
-                        displaySurface: "monitor",
+                        displaySurface: ""monitor"",
                         frameRate: 30
                     }
                 });
