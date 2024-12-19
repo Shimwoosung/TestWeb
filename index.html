@@ -1,46 +1,49 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Quest Display Capture Test</title>
+    <title>Display Test</title>
     <style>
-        body { margin: 0; background: black; color: white; font-family: Arial; }
-        #status { padding: 20px; }
+        body { 
+            background: black; 
+            color: white; 
+            font-family: Arial; 
+            margin: 20px;
+        }
     </style>
 </head>
 <body>
-    <div id=""status"">Checking browser capabilities...</div>
-    <div id=""test-results""></div>
+    <div id="status">Status: Not Started</div>
+    <button onclick="startTest()">Start Test</button>
+    <div id="result"></div>
 
     <script>
-        const statusElement = document.getElementById('status');
-        const resultsElement = document.getElementById('test-results');
+        const statusDiv = document.getElementById('status');
+        const resultDiv = document.getElementById('result');
 
-        async function checkCapabilities() {
-            let results = [];
-
-            if (navigator.mediaDevices) {
-                results.push(""✓ navigator.mediaDevices is available"");
-            } else {
-                results.push(""✗ navigator.mediaDevices is NOT available"");
+        function startTest() {
+            statusDiv.textContent = "Status: Testing...";
+            
+            if (!navigator.mediaDevices) {
+                statusDiv.textContent = "Status: mediaDevices not supported";
+                return;
             }
 
-            if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
-                results.push(""✓ getDisplayMedia is available"");
-                try {
-                    const stream = await navigator.mediaDevices.getDisplayMedia({video: true});
-                    results.push(""✓ Successfully got display media stream"");
-                    stream.getTracks().forEach(track => track.stop());
-                } catch (err) {
-                    results.push(`✗ Error getting display media: ${err.message}`);
-                }
-            } else {
-                results.push(""✗ getDisplayMedia is NOT available"");
+            if (!navigator.mediaDevices.getDisplayMedia) {
+                statusDiv.textContent = "Status: getDisplayMedia not supported";
+                return;
             }
 
-            resultsElement.innerHTML = results.join('<br>');
+            statusDiv.textContent = "Status: API supported, click OK on the next prompt";
+            
+            navigator.mediaDevices.getDisplayMedia({ video: true })
+                .then(stream => {
+                    statusDiv.textContent = "Status: Success! Got display media stream";
+                    resultDiv.textContent = "Stream active: " + stream.active;
+                })
+                .catch(err => {
+                    statusDiv.textContent = "Status: Error - " + err.message;
+                });
         }
-
-        window.onload = checkCapabilities;
     </script>
 </body>
 </html>
