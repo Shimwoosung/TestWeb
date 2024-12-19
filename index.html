@@ -1,41 +1,74 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Display Test</title>
+    <title>Quest Passthrough Streaming Test</title>
+    <style>
+        body { margin: 0; background: black; }
+        video { width: 100vw; height: 100vh; object-fit: cover; }
+        #status { position: fixed; top: 10px; left: 10px; color: white; }
+        #controls { 
+            position: fixed; 
+            top: 10px; 
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        button {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
 </head>
-<body style="background: black; color: white;">
-    <h1>Display Test</h1>
-    <button onclick="testMedia()">Test Display Capture</button>
-    <p id="log">Page loaded</p>
+<body>
+    <div id="status">Initializing...</div>
+    <div id="controls">
+        <button onclick="startCapture()">Start Capture</button>
+        <button onclick="stopCapture()">Stop Capture</button>
+    </div>
+    <video id="local-video" autoplay playsinline muted></video>
 
     <script>
-        function testMedia() {
-            let log = document.getElementById('log');
-            
-            // 1단계: mediaDevices 확인
-            if (navigator.mediaDevices) {
-                log.innerHTML += '<br>mediaDevices exists';
-            } else {
-                log.innerHTML += '<br>no mediaDevices';
-                return;
-            }
-            
-            // 2단계: getDisplayMedia 확인
-            if (navigator.mediaDevices.getDisplayMedia) {
-                log.innerHTML += '<br>getDisplayMedia exists';
+        const statusElement = document.getElementById('status');
+        const videoElement = document.getElementById('local-video');
+        let currentStream = null;
+
+        async function startCapture() {
+            try {
+                const stream = await navigator.mediaDevices.getDisplayMedia({
+                    video: {
+                        displaySurface: "monitor",
+                        frameRate: 30
+                    }
+                });
                 
-                // 3단계: 실제 호출 시도
-                navigator.mediaDevices.getDisplayMedia({ video: true })
-                    .then(stream => {
-                        log.innerHTML += '<br>Successfully got stream';
-                    })
-                    .catch(err => {
-                        log.innerHTML += '<br>Error: ' + err;
-                    });
-            } else {
-                log.innerHTML += '<br>no getDisplayMedia';
+                currentStream = stream;
+                videoElement.srcObject = stream;
+                statusElement.textContent = 'Capturing screen...';
+                
+                stream.getVideoTracks()[0].onended = () => {
+                    statusElement.textContent = 'Screen capture ended';
+                    currentStream = null;
+                };
+            } catch (err) {
+                statusElement.textContent = 'Error: ' + err.message;
+                console.error('Error:', err);
             }
         }
+
+        function stopCapture() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+                videoElement.srcObject = null;
+                statusElement.textContent = 'Capture stopped';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', startCapture);
     </script>
 </body>
 </html>
