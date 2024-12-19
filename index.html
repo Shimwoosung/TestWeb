@@ -1,74 +1,46 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Quest Passthrough Streaming Test</title>
+    <title>Quest Display Capture Test</title>
     <style>
-        body { margin: 0; background: black; }
-        video { width: 100vw; height: 100vh; object-fit: cover; }
-        #status { position: fixed; top: 10px; left: 10px; color: white; }
-        #controls { 
-            position: fixed; 
-            top: 10px; 
-            right: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        button {
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            cursor: pointer;
-        }
+        body { margin: 0; background: black; color: white; font-family: Arial; }
+        #status { padding: 20px; }
     </style>
 </head>
 <body>
-    <div id="status">Initializing...</div>
-    <div id="controls">
-        <button onclick="startCapture()">Start Capture</button>
-        <button onclick="stopCapture()">Stop Capture</button>
-    </div>
-    <video id="local-video" autoplay playsinline muted></video>
+    <div id=""status"">Checking browser capabilities...</div>
+    <div id=""test-results""></div>
 
     <script>
         const statusElement = document.getElementById('status');
-        const videoElement = document.getElementById('local-video');
-        let currentStream = null;
+        const resultsElement = document.getElementById('test-results');
 
-        async function startCapture() {
-            try {
-                const stream = await navigator.mediaDevices.getDisplayMedia({
-                    video: {
-                        displaySurface: "monitor",
-                        frameRate: 30
-                    }
-                });
-                
-                currentStream = stream;
-                videoElement.srcObject = stream;
-                statusElement.textContent = 'Capturing screen...';
-                
-                stream.getVideoTracks()[0].onended = () => {
-                    statusElement.textContent = 'Screen capture ended';
-                    currentStream = null;
-                };
-            } catch (err) {
-                statusElement.textContent = 'Error: ' + err.message;
-                console.error('Error:', err);
+        async function checkCapabilities() {
+            let results = [];
+
+            if (navigator.mediaDevices) {
+                results.push(""✓ navigator.mediaDevices is available"");
+            } else {
+                results.push(""✗ navigator.mediaDevices is NOT available"");
             }
+
+            if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+                results.push(""✓ getDisplayMedia is available"");
+                try {
+                    const stream = await navigator.mediaDevices.getDisplayMedia({video: true});
+                    results.push(""✓ Successfully got display media stream"");
+                    stream.getTracks().forEach(track => track.stop());
+                } catch (err) {
+                    results.push(`✗ Error getting display media: ${err.message}`);
+                }
+            } else {
+                results.push(""✗ getDisplayMedia is NOT available"");
+            }
+
+            resultsElement.innerHTML = results.join('<br>');
         }
 
-        function stopCapture() {
-            if (currentStream) {
-                currentStream.getTracks().forEach(track => track.stop());
-                currentStream = null;
-                videoElement.srcObject = null;
-                statusElement.textContent = 'Capture stopped';
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', startCapture);
+        window.onload = checkCapabilities;
     </script>
 </body>
 </html>
