@@ -1,56 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Display Test</title>
-    <style>
-        body { 
-            background-color: #333;
-            color: white;
-            font-family: Arial;
-            padding: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            margin: 10px 0;
-            font-size: 16px;
-        }
-    </style>
+    <title>Basic Test</title>
 </head>
-<body>
-    <h1>Display Test Page</h1>
-    <div>Current Time: <span id="time"></span></div>
-    <button onclick="testDisplay()">Test Display Capture</button>
-    <div id="status">Ready to test...</div>
+<body style="background: black; color: white;">
+    <h1>Basic Display Test</h1>
+    <p>If you can see this, the page is loading.</p>
+    <button onclick="alert('Button clicked!')">Click Me</button>
+    
+    <p id="info">Testing browser...</p>
 
     <script>
-        // 시간 업데이트 (페이지가 작동하는지 확인용)
-        setInterval(() => {
-            document.getElementById('time').textContent = new Date().toLocaleTimeString();
-        }, 1000);
-
-        function testDisplay() {
-            const status = document.getElementById('status');
-            status.textContent = "Testing...";
-
-            if (!navigator.mediaDevices) {
-                status.textContent = "Error: mediaDevices not available";
-                return;
-            }
-
-            if (!navigator.mediaDevices.getDisplayMedia) {
-                status.textContent = "Error: getDisplayMedia not available";
-                return;
-            }
-
-            status.textContent = "Found getDisplayMedia API, requesting capture...";
-            
-            navigator.mediaDevices.getDisplayMedia({ video: true })
-                .then(stream => {
-                    status.textContent = "Success! Display capture working.";
-                })
-                .catch(error => {
-                    status.textContent = "Error: " + error.message;
-                });
+        document.getElementById('info').textContent = 'Page loaded successfully!';
+        
+        if (navigator.mediaDevices) {
+            document.getElementById('info').textContent += '\nMediaDevices available';
+        } else {
+            document.getElementById('info').textContent += '\nMediaDevices NOT available';
         }
     </script>
 </body>
