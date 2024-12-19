@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Quest XR View Test</title>
+    <title>Quest Passthrough Streaming Test</title>
     <style>
         body { margin: 0; background: black; }
-        canvas { width: 100vw; height: 100vh; }
+        video { width: 100vw; height: 100vh; object-fit: cover; }
         #status { position: fixed; top: 10px; left: 10px; color: white; }
         #controls { 
             position: fixed; 
@@ -26,75 +26,49 @@
 <body>
     <div id="status">Initializing...</div>
     <div id="controls">
-        <button onclick="startXRSession()">Start XR View</button>
-        <button onclick="stopXRSession()">Stop XR View</button>
+        <button onclick="startCapture()">Start Capture</button>
+        <button onclick="stopCapture()">Stop Capture</button>
     </div>
-    <canvas id="xr-canvas"></canvas>
+    <video id="local-video" autoplay playsinline muted></video>
 
     <script>
         const statusElement = document.getElementById('status');
-        const canvas = document.getElementById('xr-canvas');
-        let xrSession = null;
-        let xrRefSpace = null;
+        const videoElement = document.getElementById('local-video');
+        let currentStream = null;
 
-        async function checkXRSupport() {
-            statusElement.textContent = 'Checking XR support...';
-            
-            if (navigator.xr) {
-                try {
-                    const supported = await navigator.xr.isSessionSupported('immersive-ar');
-                    if (supported) {
-                        statusElement.textContent = 'XR Supported! Click Start.';
-                    } else {
-                        statusElement.textContent = 'AR not supported';
-                    }
-                } catch (err) {
-                    statusElement.textContent = 'Error checking XR support: ' + err;
-                }
-            } else {
-                statusElement.textContent = 'WebXR not available';
-            }
-        }
-
-        async function startXRSession() {
+        async function startCapture() {
             try {
-                xrSession = await navigator.xr.requestSession('immersive-ar', {
-                    optionalFeatures: ['dom-overlay'],
-                    domOverlay: { root: document.body }
+                const stream = await navigator.mediaDevices.getDisplayMedia({
+                    video: {
+                        displaySurface: "monitor",
+                        frameRate: 30
+                    }
                 });
-
-                const gl = canvas.getContext('webgl', { xrCompatible: true });
-                const xrGLLayer = new XRWebGLLayer(xrSession, gl);
-                xrSession.updateRenderState({ baseLayer: xrGLLayer });
-
-                xrRefSpace = await xrSession.requestReferenceSpace('local');
-
-                xrSession.requestAnimationFrame(onXRFrame);
-                statusElement.textContent = 'XR session started';
+                
+                currentStream = stream;
+                videoElement.srcObject = stream;
+                statusElement.textContent = 'Capturing screen...';
+                
+                stream.getVideoTracks()[0].onended = () => {
+                    statusElement.textContent = 'Screen capture ended';
+                    currentStream = null;
+                };
             } catch (err) {
-                statusElement.textContent = 'Error starting XR session: ' + err;
+                statusElement.textContent = 'Error: ' + err.message;
+                console.error('Error:', err);
             }
         }
 
-        function stopXRSession() {
-            if (xrSession) {
-                xrSession.end();
-                statusElement.textContent = 'Session ended';
+        function stopCapture() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+                videoElement.srcObject = null;
+                statusElement.textContent = 'Capture stopped';
             }
         }
 
-        function onXRFrame(time, frame) {
-            const session = frame.session;
-            session.requestAnimationFrame(onXRFrame);
-
-            const pose = frame.getViewerPose(xrRefSpace);
-            if (pose) {
-                const view = pose.views[0];
-                statusElement.textContent = 'Viewing XR content';
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', checkXRSupport);
+        document.addEventListener('DOMContentLoaded', startCapture);
     </script>
 </body>
 </html>
