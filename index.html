@@ -4,44 +4,52 @@
     <title>Display Test</title>
     <style>
         body { 
-            background: black; 
-            color: white; 
-            font-family: Arial; 
-            margin: 20px;
+            background-color: #333;
+            color: white;
+            font-family: Arial;
+            padding: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px 0;
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
-    <div id="status">Status: Not Started</div>
-    <button onclick="startTest()">Start Test</button>
-    <div id="result"></div>
+    <h1>Display Test Page</h1>
+    <div>Current Time: <span id="time"></span></div>
+    <button onclick="testDisplay()">Test Display Capture</button>
+    <div id="status">Ready to test...</div>
 
     <script>
-        const statusDiv = document.getElementById('status');
-        const resultDiv = document.getElementById('result');
+        // 시간 업데이트 (페이지가 작동하는지 확인용)
+        setInterval(() => {
+            document.getElementById('time').textContent = new Date().toLocaleTimeString();
+        }, 1000);
 
-        function startTest() {
-            statusDiv.textContent = "Status: Testing...";
-            
+        function testDisplay() {
+            const status = document.getElementById('status');
+            status.textContent = "Testing...";
+
             if (!navigator.mediaDevices) {
-                statusDiv.textContent = "Status: mediaDevices not supported";
+                status.textContent = "Error: mediaDevices not available";
                 return;
             }
 
             if (!navigator.mediaDevices.getDisplayMedia) {
-                statusDiv.textContent = "Status: getDisplayMedia not supported";
+                status.textContent = "Error: getDisplayMedia not available";
                 return;
             }
 
-            statusDiv.textContent = "Status: API supported, click OK on the next prompt";
+            status.textContent = "Found getDisplayMedia API, requesting capture...";
             
             navigator.mediaDevices.getDisplayMedia({ video: true })
                 .then(stream => {
-                    statusDiv.textContent = "Status: Success! Got display media stream";
-                    resultDiv.textContent = "Stream active: " + stream.active;
+                    status.textContent = "Success! Display capture working.";
                 })
-                .catch(err => {
-                    statusDiv.textContent = "Status: Error - " + err.message;
+                .catch(error => {
+                    status.textContent = "Error: " + error.message;
                 });
         }
     </script>
